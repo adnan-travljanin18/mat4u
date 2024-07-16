@@ -1,0 +1,89 @@
+<style>
+  .floated-form {
+    height: auto!important;
+    .product-parameters{
+    height: 80px;
+    }
+  }
+  .product__info-container{
+    position:relative;
+  }
+  .fake-form{
+  transition: top 0.3s;
+  }
+</style>
+<script defer>  
+    function cloneAndPrepare(checksum){
+    if (checksum){
+    console.log('executing');
+    $ = hulkapps_jQuery;
+    checksum = false;
+    var lastPos = 0;
+    var headerHeight = $('.header__top').outerHeight();
+    const themeForm = $('floated-form.floated-form');
+    var themeFormLeft = themeForm[0].getBoundingClientRect().left + "px";
+    const fakeForm = themeForm.clone();
+    fakeForm.addClass('fake-form');
+    $('.product__info-container').append(fakeForm);
+    fakeForm.hide();
+    var suggestedHeight = fakeForm.find('.product-parameters').height()+ 10 + "px";
+    fakeForm.find('.product-parameters')[0].setAttribute('style',suggestedHeight); 
+    setTimeout(()=>{
+    fakeForm.css({
+      'width':themeForm.outerWidth() + "px",
+      'position':'fixed',
+      'top': headerHeight+"px",
+      'left': themeFormLeft,
+      'z-index':'999'
+    });
+    },500);
+    $(document).on('scroll',function(e){
+      var newPos = $(window).scrollTop();
+      console.log('prijasnja',lastPos,'nova',newPos);
+      if (lastPos === 0) {lastPos = newPos};
+      if (newPos >= lastPos + headerHeight) {
+        console.log('ideDole');
+        $('.fake-form').css('top','0');
+        lastPos = newPos;
+      } else if (newPos < lastPos){
+        console.log('ideGore');
+        $('.fake-form').css('top',headerHeight+"px");
+        lastPos = newPos;
+      }
+      var stickyFormPos = themeForm[0].getBoundingClientRect().top;
+      console.log(stickyFormPos);
+        if (stickyFormPos < headerHeight){
+        fakeForm.show()
+        themeForm.css('opacity','0');
+      } else {
+        fakeForm.hide()
+        themeForm.css('opacity','1');
+      }
+    })
+    } else {console.log('invalid requirement')}
+  }
+
+    function preventIncorrectEvents(checksum){
+      if (checksum){
+      $('floated-form .shopify-cleanslate div[role="button"]').each(function(){
+        $(this).removeAttr('class');
+        console.log('removed');
+      })
+      $('floated-form').on('click', function(e){
+        console.log('clicked')
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      })
+      }
+    }
+    let checksum = true;
+    window.addEventListener('load',()=>{
+    cloneAndPrepare(checksum);
+    //preventIncorrectEvents(checksum);
+    checksum = false;
+  })
+</script>
+
+
+
