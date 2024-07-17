@@ -2030,6 +2030,75 @@
   });
 </script>
 
+                  {% comment %}
+---------------- PRODUCT GROUPING  ----------------
+{% endcomment %}
+{% assign group_tags = product.tags | where: "group-" %}
+{% assign has_group_tags = false %}
+{% if group_tags.size > 0 %}
+  {% assign has_group_tags = true %}
+{% endif %}
+{% for tag in group_tags %}
+<script>
+(function() {
+    let requestUrl = "/collections/all/{{ tag }}?view=json";
+    let request = new XMLHttpRequest();
+    request.open("GET", requestUrl);
+    request.onload = function() {
+        if (request.status >= 200 && request.status < 300) {
+            // Parse products JSON
+            let products = JSON.parse(request.response);
+          
+            // Get the wrapper element
+            let productGroupSelectWrapper = document.getElementById('ProductGroupSelectWrapper');
+
+            // Show if items, else hide
+            if (products.length > 1) {
+              productGroupSelectWrapper.removeAttribute('hidden');
+            } else {
+              return
+            }
+
+            // Sort products A-Z
+            products.sort(function(a, b){
+              if(a.title < b.title) { return -1; }
+              if(a.title > b.title) { return 1; }
+              return 0;
+            });
+          
+            // Get the select element
+            let productGroupSelect = document.getElementById('ProductGroupSelect');
+
+            // loop through each product
+            products.forEach(function(product) {
+                // Create a new option element
+                let option = document.createElement("option");
+                option.value = product.id;
+                option.setAttribute("data-url", product.url);
+                option.textContent = product.title;
+
+                // Append the option to the select element
+                productGroupSelect.appendChild(option);
+            });
+
+            // select functionality
+            productGroupSelect.value = {{ product.id }};
+            productGroupSelect.addEventListener('change', function() {
+                let url = this.options[this.selectedIndex].getAttribute('data-url');
+                location.replace(url);
+            });
+            
+            // ADD ADDITIONAL CODE HERE
+        }
+    };
+    request.send();
+})();
+</script>
+{% endfor %}
+{% comment %}
+---------------- END PRODUCT GROUPING  ----------------
+{% endcomment %}
+
 {% schema %}
 {
   "name": "t:sections.main-product.name",
