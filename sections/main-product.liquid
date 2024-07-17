@@ -870,6 +870,8 @@
                   {{- product.selected_or_first_available_variant.sku -}}
                 </p>
 
+                {{ collection }}
+
               {%- when 'variant_picker' -%}
                 {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
 
@@ -1967,9 +1969,7 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    // Function to synchronize forms
     function syncForms() {
-      // Get floated form and variant picker elements
       var floatedForm = document.getElementById('FloatedForm-{{ section.id }}');
       var variantRadios = document.getElementById('variant-radios-{{ section.id }}');
       var variantSelects = document.getElementById('variant-selects-{{ section.id }}');
@@ -1977,52 +1977,55 @@
 
       if (!floatedForm || !variantPicker) return;
 
-      // Helper function to update the variant picker based on floated form
       function updateVariantPicker() {
-        var floatedSelects = floatedForm.querySelectorAll('select');
-        floatedSelects.forEach(function (floatedSelect, index) {
-          var selectedOption = floatedSelect.value;
+        var floatedInputs = floatedForm.querySelectorAll('select, input[type="radio"]');
+        floatedInputs.forEach(function (floatedInput) {
+          var name = floatedInput.name;
+          var value = floatedInput.value;
+
           if (variantRadios) {
-            var radios = variantRadios.querySelectorAll(`input[type="radio"][name="option-${index + 1}"]`);
+            var radios = variantRadios.querySelectorAll(`input[type="radio"][name="${name}"]`);
             radios.forEach(function (radio) {
-              if (radio.value == selectedOption) {
+              if (radio.value == value) {
                 radio.checked = true;
               }
             });
-          } else if (variantSelects) {
-            var selects = variantSelects.querySelectorAll('select');
-            selects[index].value = selectedOption;
+          }
+
+          if (variantSelects) {
+            var selects = variantSelects.querySelectorAll(`select[name="${name}"]`);
+            selects.forEach(function (select) {
+              select.value = value;
+            });
           }
         });
       }
 
-      // Helper function to update the floated form based on variant picker
       function updateFloatedForm() {
-        var variantSelectsGroup = variantSelects ? variantSelects.querySelectorAll('select') : null;
-        var variantRadiosGroup = variantRadios ? variantRadios.querySelectorAll('fieldset') : null;
-        var floatedSelects = floatedForm.querySelectorAll('select');
+        var variantInputs = variantPicker.querySelectorAll('select, input[type="radio"]:checked');
+        variantInputs.forEach(function (variantInput) {
+          var name = variantInput.name;
+          var value = variantInput.value;
+          var floatedInput = floatedForm.querySelector(
+            `select[name="${name}"], input[type="radio"][name="${name}"][value="${value}"]`
+          );
 
-        floatedSelects.forEach(function (floatedSelect, index) {
-          if (variantRadiosGroup) {
-            var checkedRadio = variantRadiosGroup[index].querySelector('input[type="radio"]:checked');
-            if (checkedRadio) {
-              floatedSelect.value = checkedRadio.value;
+          if (floatedInput) {
+            if (floatedInput.tagName.toLowerCase() === 'select') {
+              floatedInput.value = value;
+            } else if (floatedInput.type === 'radio') {
+              floatedInput.checked = true;
             }
-          } else if (variantSelectsGroup) {
-            floatedSelect.value = variantSelectsGroup[index].value;
           }
         });
       }
 
-      // Add event listeners to sync changes
       floatedForm.addEventListener('change', updateVariantPicker);
       variantPicker.addEventListener('change', updateFloatedForm);
 
-      // Initial sync
       updateFloatedForm();
     }
 
-    // Initialize sync
     syncForms();
   });
 </script>
