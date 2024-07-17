@@ -912,6 +912,13 @@
                       novalidate: 'novalidate',
                       data-type: 'add-to-cart-form'
                     -%}
+                      <div hidden id="ProductGroupSelectWrapper" class="product-form__input product-form__input--dropdown">
+  <label class="form__label">Product</label>
+  <div class="select">
+    <select class="select__select" id="ProductGroupSelect" data-name="product-type" data-index="option0"></select>
+    {% render 'icon-caret' %}
+  </div>
+</div>
                       <input
                         type="hidden"
                         name="id"
